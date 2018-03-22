@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
+    <title>LettuceThink</title>
+
+<style>
+.add-vertical-space { margin-top: 20px; }
+.btn-bed { padding: 36px; font-size: 36px; line-height: 36px; white-space: normal; }
+</style>
+    
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <div class="alert alert-danger" role="alert">
+            {{ message }}
+          </div>
+        </div>
+      </div>
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="farm" class="btn btn-outline-secondary btn-lg btn-block btn-standout">Retour</button> 
+        </div>
+      </div>
+    </div>
+            
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Bootstrap JS -->
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+
+<script>
+$(function(){
+  $("#farm").on("click", function (e) {
+    $("body").load("/");
+  });
+});
+</script>
+    
+  </body>
+</html>
