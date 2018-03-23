@@ -21,8 +21,14 @@
       <div class="row">
         <div class="col-sm">
           <div class="zone-info text-center">Planche {{location.bed}} - Zone {{location.zone}}</div>
-          <div class="zone-details text-center">{{ action[4] }}</div>
+          <div class="zone-details text-center">{{ action[3] }}</div>
           <div class="zone-details text-center">{{ action[2] }}</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm">
+          <img id="topcam" src="/topcam.jpg" width="320">
         </div>
       </div>
 
@@ -122,6 +128,13 @@ $(function(){
     $("body").load("/");
   });
 });
+
+$("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
+
+var updateCamera = function() {
+  $("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
+};
+setInterval(updateCamera, 1000);
 </script>
   </body>
 </html>
