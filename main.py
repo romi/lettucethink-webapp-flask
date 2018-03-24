@@ -26,6 +26,7 @@ import datetime
 
 imgdir = "/tmp"
 topcamUrl = "http://lettucethink-topcam.local:10000/image.jpg"
+tagsUrl = "http://lettucethink-topcam.local:10000/tags.json"
 
 app = Flask(__name__)
 
@@ -223,5 +224,10 @@ def topcam():
     img = requests.get(topcamUrl + "?w=320&h=240")
     return Response(img, mimetype="image/jpeg")
 
+@app.route('/tags.json')
+def tags():
+    tags = requests.get(tagsUrl)
+    return Response(tags, mimetype="application/json")
+
 if __name__=='__main__':
-   app.run(host = '0.0.0.0', debug = True)
+   app.run(host = '0.0.0.0', debug = True, threaded = True)
