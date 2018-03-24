@@ -25,7 +25,7 @@ import requests
 import datetime
 
 imgdir = "/tmp"
-topcamUrl = "http://localhost:10000/image.jpg"
+topcamUrl = "http://lettucethink-topcam.local:10000/image.jpg"
 
 app = Flask(__name__)
 
