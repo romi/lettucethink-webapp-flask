@@ -20,14 +20,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-from flask import Flask, render_template, Response, request, redirect
+from flask import Flask, render_template, Response, request, redirect, jsonify
 import requests
 import datetime
+import time
+import CNCWorker
+
 
 imgdir = "/tmp"
 topcamUrl = "http://lettucethink-topcam.local:10000/image.jpg"
 
 app = Flask(__name__)
+cnc = False
+worker = CNCWorker.CNCWorker()
 
 def getAction(bed, zone):
     actions = [
@@ -140,6 +145,12 @@ def zonePage(bed, zone):
     return render_template('zone.html', location=location, action=action)
 
 
+def weedingPage(bed, zone):
+    action = getAction(bed, zone)
+    location = {"bed": bed, "zone": zone}
+    return render_template('weeding.html', location=location, action=action)
+
+
 def storeImage(bed, zone, label):
     action = getAction(bed, zone)
     if action == False or action[2] == "end":
@@ -153,17 +164,28 @@ def storeImage(bed, zone, label):
     file = open(path, "wb")
     file.write(r.content);
     file.close()
-    
+
+def storeAfterImage(bed, zone):
+    storeImage(bed, zone, "after")
+        
     
 @app.route('/')
 def index():
     return render_template('farm.html')
+
 
 @app.route('/zone')
 def zone():
     bed = request.args["bed"]
     zone = int(request.args["zone"])
     return zonePage(bed, zone)
+
+
+@app.route('/cnc_status')
+def cnc_status():
+    global worker
+    s, p = worker.getStatus()
+    return jsonify(status=s, progress=p)
 
 @app.route('/back')
 def back():
@@ -174,12 +196,16 @@ def back():
     else:
         return render_template('farm.html')
 
+    
 @app.route('/hoe_all')
 def hoeAll():
+    global worker
     bed = request.args["bed"]
     zone = int(request.args["zone"])
     storeImage(bed, zone, "before")
-    return zonePage(bed, zone + 1)
+    worker.nextRun(bed, zone, "boustrophedon", storeAfterImage)
+    return weedingPage(bed, zone)
+
 
 @app.route('/hoe_inbetween')
 def hoeInBetween():
@@ -188,12 +214,14 @@ def hoeInBetween():
     storeImage(bed, zone, "before")
     return zonePage(bed, zone + 1)
 
+
 @app.route('/hoe_weeds')
 def hoeWeeds():
     bed = request.args["bed"]
     zone = int(request.args["zone"])
     storeImage(bed, zone, "before")
     return zonePage(bed, zone + 1)
+
 
 @app.route('/hoe_seeds')
 def hoeSeeds():
@@ -202,6 +230,7 @@ def hoeSeeds():
     storeImage(bed, zone, "before")
     return zonePage(bed, zone + 1)
 
+
 @app.route('/skip')
 def skip():
     bed = request.args["bed"]
@@ -209,9 +238,6 @@ def skip():
     storeImage(bed, zone, "before")
     return zonePage(bed, zone + 1)
 
-@app.route('/boustro')
-def boustro():
-    return "ok"
    
 @app.route('/homing')
 def homing():

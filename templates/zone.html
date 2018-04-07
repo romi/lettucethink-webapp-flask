@@ -29,7 +29,7 @@
       <div class="row">
         <div class="col-sm">
           <img id="topcam" src="/topcam.jpg" width="320">
-        </div>
+        </div> 
       </div>
 
       <div class="row add-vertical-space">
@@ -102,30 +102,39 @@
 <script>
 var bed = "{{ location.bed }}";
 var zone = "{{ location.zone }}";
+
+function loadPage(path) {
+    clearInterval(timerID);
+    $("body").load(path + "?bed=" + bed + "&zone=" + zone);
+}
+
 $(function(){
   $("#hoe_all").on("click", function (e) {
-    $("body").load("hoe_all?bed=" + bed + "&zone=" + zone);
+    loadPage("hoe_all");
   });
   $("#hoe_inbetween").on("click", function (e) {
-    $("body").load("hoe_inbetween?bed=" + bed + "&zone=" + zone);
+    loadPage("hoe_inbetween");
   });
   $("#hoe_weeds").on("click", function (e) {
-    $("body").load("hoe_weeds?bed=" + bed + "&zone=" + zone);
+    clearInterval(timerID);
+    loadPage("hoe_weeds");
   });
   $("#hoe_seeds").on("click", function (e) {
-    $("body").load("hoe_seeds?bed=" + bed + "&zone=" + zone);
+    clearInterval(timerID);
+    loadPage("hoe_seeds");
   });
   $("#skip").on("click", function (e) {
-    $("body").load("skip?bed=" + bed + "&zone=" + zone);
+    loadPage("skip");
   });
   $("#home").on("click", function (e) {
-    $("body").load("home?bed=" + bed + "&zone=" + zone);
+    clearInterval(timerID);
+    loadPage("home");
   });
   $("#back").on("click", function (e) {
-    $("body").load("back?bed=" + bed + "&zone=" + zone);
+    loadPage("back");
   });
   $("#farm").on("click", function (e) {
-    $("body").load("/");
+    loadPage("/");
   });
 });
 
@@ -134,7 +143,7 @@ $("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
 var updateCamera = function() {
   $("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
 };
-setInterval(updateCamera, 1000);
+var timerID = setInterval(updateCamera, 1000);
 </script>
   </body>
 </html>
