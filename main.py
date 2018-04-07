@@ -27,6 +27,7 @@ import datetime
 imgdir = "/tmp"
 topcamUrl = "http://lettucethink-topcam.local:10000/image.jpg"
 tagsUrl = "http://lettucethink-topcam.local:10000/tags.json"
+captureUrl = "http://lettucethink-topcam.local:10000/capture"
 
 app = Flask(__name__)
 
@@ -145,16 +146,14 @@ def storeImage(bed, zone, label):
     action = getAction(bed, zone)
     if action == False or action[2] == "end":
         return
-    date = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
     zoneid = "%s-%02d" % (bed, zone)
     expid = action[2]
-    path = "%s/%s_%s_%s_%s_%s.jpg" % (imgdir, date, getFarmId(), zoneid, expid, label)
-    print("Saving topcam image to %s" % (path));
-    r = requests.get(topcamUrl)
-    file = open(path, "wb")
-    file.write(r.content);
-    file.close()
-    
+    date = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
+    name = "%s_%s_%s_%s_%s" % (getFarmId(), zoneid, expid, date, label)
+    print("Captureing topcam, name %s" % (name));
+    r = requests.get("%s?name=%s" % (captureUrl, name))
+    # FIXME handle response 
+    print(r.text)
     
 @app.route('/')
 def index():
