@@ -86,14 +86,14 @@ class CNCVelocityControl(object):
         s = self.__sendCommand("s")
         self.mutex.acquire()
         try:
-            stat = json.loads(s)
+            stat = json.loads(s.decode("utf-8"))
             self.status = stat["status"]
             self.p = stat["p"]
             self.v = stat["v"]
         except KeyError as k:
             print("Failed to parse the JSON: missing key")
-        except:
-            print("Failed to parse the JSON")
+        except Exception as e:
+            print("Failed to parse the JSON: " + str(e))
         finally:
             self.mutex.release()
         #print('status=%s, p=%s, v=%s' % (self.status, str(self.p), str(self.v)))
