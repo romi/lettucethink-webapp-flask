@@ -244,15 +244,18 @@ def homing():
     print("homing")
     return "ok"
 
+
 @app.route('/topcam.jpg')
 def topcam():
     img = requests.get(topcamUrl + "?w=320&h=240")
     return Response(img, mimetype="image/jpeg")
+
 
 @app.route('/tags.json')
 def tags():
     tags = requests.get(tagsUrl)
     return Response(tags, mimetype="application/json")
 
+
 if __name__=='__main__':
-   app.run(host = '0.0.0.0', debug = True, threaded = True)
+   app.run(host = '0.0.0.0', debug = False, threaded = False)

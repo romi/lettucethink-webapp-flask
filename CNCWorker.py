@@ -14,6 +14,7 @@ class CNCWorker(object):
         self.progress = 0
         self.thread = Thread(target = self.__run, args = ())
         self.thread.start()
+        #self.cnc = CNCVelocityControl.CNCVelocityControl("/dev/ttyACM0")
         self.cnc = False
 
         
@@ -38,8 +39,10 @@ class CNCWorker(object):
 
     
     def __run(self):
+        time.sleep(5)   
         print("CNCWorker: Starting CNC");
         self.cnc = CNCVelocityControl.CNCVelocityControl("/dev/ttyACM0")
+        
         self.mutex.acquire()
         self.status = "ready"
         self.mutex.release()

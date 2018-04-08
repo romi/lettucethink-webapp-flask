@@ -2,7 +2,7 @@ import serial
 import json
 import time
 import threading
-from threading import Lock
+#from threading import Lock
 
 # cmp() is no longer defined in Python3 (silly)
 def cmp(a, b):
@@ -11,13 +11,15 @@ def cmp(a, b):
 class CNCVelocityControl(object):
 
     def __init__(self, port="/dev/ttyUSB0", homing=True):
-        self.mutex = Lock()
+        #self.mutex = Lock()
         self.port = port
+        #self.mutex.acquire()
         self.serial_port = serial.Serial(self.port, 115200)
         # read '#ready'
         while self.serial_port.in_waiting == 0:
             time.sleep(0.1)   
         r = self.serial_port.readline() 
+        #self.mutex.release()
         self.home()
         self.setZero()
         self.status = "idle"
@@ -35,16 +37,16 @@ class CNCVelocityControl(object):
 
         
     def getStatus(self):
-        self.mutex.acquire()
+        #self.mutex.acquire()
         s = self.status
-        self.mutex.release()
+        #self.mutex.release()
         return s
 
     
     def getPosition(self):
-        self.mutex.acquire()
+        #self.mutex.acquire()
         p = self.p
-        self.mutex.release()
+        #self.mutex.release()
         return p
 
     
@@ -84,7 +86,7 @@ class CNCVelocityControl(object):
             
     def __updateStatus(self):
         s = self.__sendCommand("s")
-        self.mutex.acquire()
+        #self.mutex.acquire()
         try:
             stat = json.loads(s.decode("utf-8"))
             self.status = stat["status"]
@@ -95,19 +97,21 @@ class CNCVelocityControl(object):
         except Exception as e:
             print("Failed to parse the JSON: " + str(e))
         finally:
-            self.mutex.release()
+            dummy = 0 # dummy statement to avoid empty 'finally' clause
+            #self.mutex.release()
         #print('status=%s, p=%s, v=%s' % (self.status, str(self.p), str(self.v)))
 
         
     def __sendCommand(self, s):
         r = False
-        self.mutex.acquire()
+        #self.mutex.acquire()
         try:
             self.serial_port.write(bytes('%s\n' % s, 'utf-8'))
             time.sleep(0.01)   
             r = self.serial_port.readline()
         finally:
-            self.mutex.release()
+            dummy = 0 # dummy statement to avoid empty 'finally' clause
+            #self.mutex.release()
         if r != False:
             print('cmd=%s, reply=%s' % (s, r))
         else:
