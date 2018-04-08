@@ -108,7 +108,10 @@ class CNCVelocityControl(object):
             r = self.serial_port.readline()
         finally:
             self.mutex.release()
-        print('cmd=%s, reply=%s' % (s, r))
+        if r != False:
+            print('cmd=%s, reply=%s' % (s, r))
+        else:
+            print('cmd=%s: failed' % (s))
         return r;
 
     
