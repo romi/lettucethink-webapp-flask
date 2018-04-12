@@ -25,7 +25,7 @@ class CNCVelocityControl(object):
         self.status = "idle"
         self.p = [0, 0, 0]
         self.v = [0, 0, 0]
-        self.__updateStatus()
+        self.updateStatus()
         
 
     def home(self):
@@ -34,6 +34,14 @@ class CNCVelocityControl(object):
         
     def setZero(self):
         self.__sendCommand('0')
+
+        
+    def startSpindle(self, ):
+        self.__sendCommand('S1')
+
+                
+    def stopSpindle(self, ):
+        self.__sendCommand('S0')
 
         
     def getStatus(self):
@@ -67,24 +75,27 @@ class CNCVelocityControl(object):
         v = list(map(lambda p, t: 50 * cmp(t, p), self.p, [x, y, z]))
         self.setLimitPos(x, y, z)
         self.moveat(v[0], v[1], v[2])
-        self.waitStopMoving()
 
         
     def moveto(self, p, v):
         self.setLimitPos(p[0], p[1], p[2])
         self.moveat(v[0], v[1], v[2])
-        self.waitStopMoving()
+
+        
+    def moveto_z(self, z, vz):
+        self.__sendCommand("Z%d" % z)
+        self.__sendCommand("z%d" % vz)
 
         
     def waitStopMoving(self):
         time.sleep(0.1)   
-        self.__updateStatus()
+        self.updateStatus()
         while self.status == "moving":
             time.sleep(0.1)   
-            self.__updateStatus()
+            self.updateStatus()
 
             
-    def __updateStatus(self):
+    def updateStatus(self):
         s = self.__sendCommand("s")
         #self.mutex.acquire()
         try:

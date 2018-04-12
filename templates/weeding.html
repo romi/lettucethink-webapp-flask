@@ -40,6 +40,19 @@
           <p id="status">Waiting...</p>
         </div> 
       </div>
+      
+      <div class="row">
+        <div class="col-sm" style="margin-bottom: 20px">
+          <button type="button" id="toolup" class="btn btn-primary btn-lg btn-block btn-standout">Remonter l'outil</button>
+        </div> 
+      </div>
+
+      <div class="row">
+        <div class="col-sm">
+          <button type="button" id="tooldown" class="btn btn-primary btn-lg btn-block btn-standout">Descendre l'outil</button>
+        </div> 
+      </div>
+
     </div>
     
     <!-- Optional JavaScript -->
@@ -53,6 +66,14 @@ var zone = "{{ location.zone }}";
 
 $("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
 
+$("#tooldown").on("click", function (e) {
+    $.getJSON("/tooldown", function(d) {});
+});
+
+$("#toolup").on("click", function (e) {
+    $.getJSON("/toolup", function(d) {});
+});
+
 var updateProgress = function(d) {
     if (d.status && d.status == "ready") {
         clearInterval(timerID);
@@ -65,7 +86,7 @@ var updateProgress = function(d) {
 }
 
 var updateStatus = function() {
-    $("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
+//    $("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
     $.getJSON("/cnc_status", updateProgress);
 };
 var timerID = setInterval(updateStatus, 1000);

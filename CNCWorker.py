@@ -12,6 +12,7 @@ class CNCWorker(object):
         self.nextCallback = False
         self.status = "initializing"
         self.progress = 0
+        self.dz = 0
         self.thread = Thread(target = self.__run, args = ())
         self.thread.start()
         #self.cnc = CNCVelocityControl.CNCVelocityControl("/dev/ttyACM0")
@@ -38,6 +39,12 @@ class CNCWorker(object):
         return s, p
 
     
+    def changeZ(self, dz):
+        self.mutex.acquire()
+        self.dz = dz
+        self.mutex.release()
+
+    
     def __run(self):
         time.sleep(5)   
         print("CNCWorker: Starting CNC");
@@ -62,19 +69,43 @@ class CNCWorker(object):
                 print("CNCWorker: have data");
 
                 self.__startWeeding(bed, zone, trajectory)
-                if callback != False:
-                    callback(bed, zone)
 
                 self.mutex.acquire()
                 self.status = "ready"
                 self.progress = 100.0
                 self.mutex.release()
+
+                if callback != False:
+                    callback(bed, zone)
                 
             else:
                 self.mutex.release()
                 time.sleep(0.5)   
 
                 
+    def __checkZ(self):
+        self.mutex.acquire()
+        dz = self.dz
+        self.dz = 0
+        self.mutex.release()
+
+        if dz != 0:
+            pos = self.cnc.getPosition()
+            z = pos[2] + dz
+            vz = 5
+            if dz < 0: vz = -5
+            moveto_z(z, vz);
+
+            
+    def __waitStopMoving(self):
+        time.sleep(0.1)   
+        self.cnc.updateStatus()
+        while self.cnc.getStatus() == "moving":
+            time.sleep(0.1)
+            self.__checkZ()
+            self.cnc.updateStatus()
+
+            
     def __incrProgress(self, dp):
         self.mutex.acquire()
         self.progress += dp
@@ -88,26 +119,47 @@ class CNCWorker(object):
         if trajectory == "boustrophedon":
             self.__runBoustrophedon()
 
+    def __moveto(self, pos, vel, prog):
+        self.cnc.moveto(pos, vel)
+        self.__waitStopMoving()
+        self.__incrProgress(prog)
         
     def __runBoustrophedon(self):
         print("runBoustrophedon start")
-        rounds = 1
+        rounds = 7
         xoff = 0
-        dp = 100.0 / (3 + rounds * 4 - 1)
-        self.cnc.moveto([0, 0, 100], [0, 0, 10])
-        self.__incrProgress(dp)
+        vy = 50
+        vx = 20
+        dx = 50
+        z0 = 0
+        z1 = -100
+        vz = 10
+
+        # A rough estimate of the amount of progress after each
+        # segment
+        delta_progress = 100.0 / (3 + rounds * 4 - 1)
+
+        print("Tool down");
+        self.__moveto([0, 0, z1], [0, 0, -vz], delta_progress)
+        print("Start spindle");
+        self.cnc.startSpindle()
+        print("Starting boustrophedon");
         for round in range(rounds):
-            self.cnc.moveto([xoff, -600, 0], [0, -50, 0])
-            self.__incrProgress(dp)
-            self.cnc.moveto([xoff - 50, -600, 0], [-20, 0, 0])
-            self.__incrProgress(dp)
-            self.cnc.moveto([xoff - 50, -24, 0], [0, 50, 0])
-            self.__incrProgress(dp)
+            x0 = xoff
+            x1 = xoff - dx + vx/2
+            x2 = xoff - 2 * dx + vx/2
+            y0 = vy / 2 # not zero because the arm slows down starting at vy/2
+            y1 = 650
+            self.__moveto([x0, -y1, 0], [0, -vy, 0], delta_progress)
+            self.__moveto([x1, -y1, 0], [-vx, 0, 0], delta_progress)
+            self.__moveto([x1, -y0, 0], [0, vy, 0], delta_progress)
             if (round < rounds - 1):
-                self.cnc.moveto([xoff - 100, -24, 0], [-20, 0, 0])
-                self.__incrProgress(dp)
+                self.__moveto([x2, -y0, 0], [-vx, 0, 0], delta_progress)
             xoff -= 100
-        self.cnc.moveto([0, 0, 0], [0, 0, -10])
-        self.__incrProgress(dp)
-        self.cnc.moveto([10, 0, 0], [20, 1, 0])
+        print("Stop spindle");
+        self.cnc.stopSpindle()
+        print("Tool up");
+        self.__moveto([0, 0, z0], [0, 0, vz], delta_progress)
+        self.__moveto([20, 5, 0], [20, 1, 0], delta_progress)
+        self.cnc.home()
         print("runBoustrophedon end")

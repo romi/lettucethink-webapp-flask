@@ -245,6 +245,18 @@ def homing():
     return "ok"
 
 
+@app.route('/toolup')
+def toolup():
+    worker.changeZ(10)
+    return "ok"
+
+
+@app.route('/tooldown')
+def tooldown():
+    worker.changeZ(-10)
+    return "ok"
+
+
 @app.route('/topcam.jpg')
 def topcam():
     img = requests.get(topcamUrl + "?w=320&h=240")
