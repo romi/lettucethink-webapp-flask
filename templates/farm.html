@@ -9,31 +9,41 @@
 
 <style>
 .add-vertical-space { margin-top: 20px; }
-.btn-bed { padding: 36px; font-size: 36px; line-height: 36px; white-space: normal; }
+.btn-bed { padding: 12px; font-size: 24px; line-height: 36px; white-space: normal; margin-bottom: 10px; }
+table.farm { vertical-align: top; margin: 20px; }
+td.farm { vertical-align: top; text-align: center; padding: 10px; }
+table.bed { padding: 0px; font-size: 14px; line-height: 16px; margin: 0px; border-collapse: collapse;}
+td.zone { width: 100px; height: 100px; padding: 10px: 14px; border: solid 2px black; margin: 0px; text-align: center; }
+div.number { diplay: inline; font-size: 20px; font-weight: 700; }
+div.exp { diplay: inline; }
 </style>
     
   </head>
   <body>
 
     <div class="container">
-      <div class="row add-vertical-space">
-        <div class="col-sm">
-          <button type="button" class="btn btn-primary btn-lg btn-block btn-bed" id="I1">Planche intérieure I1</button>
+    <div class="row add-vertical-space">
+      <div class="col-sm">
+         <table class="farm">
+            <tr>
+{% for name in names %}
+              <td class="farm">
+                Planche <button type="button" class="btn btn-dark btn-lg btn-block btn-bed" id="{{ name }}" onclick="showZone('{{name}}', 1)">{{ name }}</button>
+                {% set zones = beds[name] %}
+                <table class="bed">
+{% for zone in zones %}
+                  <tr>
+                    <td class="zone text-center" onclick="showZone('{{name}}', '{{ zone[1] }}')" style="background-color: {{ zone[6] }};"><div class="number">{{ zone[1] }}</div><br><div class="exp">{{ zone[2] }}</div></td>
+                  </tr>
+{% endfor %}        
+                </table>
+              <td>
+{% endfor %}        
+            </tr>
+          </table>
         </div>
       </div>
-        
-      <div class="row add-vertical-space">
-        <div class="col-sm">
-          <button type="button" class="btn btn-primary btn-lg btn-block btn-bed" id="E1">Planche extérieure E1</button>
-        </div>
-      </div>
-        
-      <div class="row add-vertical-space">
-        <div class="col-sm">
-          <button type="button" class="btn btn-primary btn-lg btn-block btn-bed" id="E3">Planche extérieure E3</button>
-        </div>
-      </div>
-    </div>
+
     
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Bootstrap JS -->
@@ -41,19 +51,10 @@
     <script src="/static/js/bootstrap.min.js"></script>
 
 <script>
-$(function(){
-  $("#I1").on("click", function (e) {
-    $("body").load("zone?bed=I1&zone=1");
-  });
-  
-  $("#E1").on("click", function (e) {
-    window.location = "zone?bed=E1&zone=1";
-  });
-  
-  $("#E3").on("click", function (e) {
-    window.location = "zone?bed=E3&zone=1";
-  });
-});
+function showZone(bed, zone)
+{
+    window.location = "moveto?bed=" + bed + "&zone=" + zone;
+}
 </script>
     
   </body>

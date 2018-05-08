@@ -23,13 +23,10 @@
           <div class="zone-info text-center">Planche {{location.bed}} - Zone {{location.zone}}</div>
           <div class="zone-details text-center">{{ action[3] }}</div>
           <div class="zone-details text-center">{{ action[2] }}</div>
+{% for h in history %}
+          <div class="zone-details text-center">{{ h[3] }}: {{ h[2] }}</div>
+{% endfor %}        
         </div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm">
-          <img id="topcam" src="/topcam.jpg" width="320">
-        </div> 
       </div>
 
       <div class="row add-vertical-space">
@@ -38,24 +35,6 @@
         </div>
       </div>
         
-      <div class="row add-vertical-space">
-        <div class="col-sm">
-          <button type="button" id="hoe_inbetween" class="btn {% if action[4] == 'hoe_inbetween' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-lg btn-block btn-standout">Sarcler entre les plantes</button>
-        </div>
-      </div>
-        
-      <div class="row add-vertical-space">
-        <div class="col-sm">
-          <button type="button" id="hoe_weeds" class="btn {% if action[4] == 'hoe_weeds' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-lg btn-block btn-standout">Sarclage sélectif</button>
-        </div>
-      </div>
-        
-      <div class="row add-vertical-space">
-        <div class="col-sm">
-          <button type="button" id="hoe_seeds" class="btn {% if action[4] == 'hoe_seeds' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-lg btn-block btn-standout">Sarcler autour des semis</button>
-        </div>
-      </div>
-      
       <div class="row add-vertical-space">
         <div class="col-sm">
           <button type="button" id="skip" class="btn {% if action[4] == 'skip' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-lg btn-block btn-standout">Ne rien faire</button>
@@ -70,13 +49,13 @@
 
       <div class="row add-vertical-space">
         <div class="col-sm">
-          <button type="button" id="home" class="btn btn-outline-secondary btn-lg btn-block btn-standout">Repositionner l'outil</button> 
+          <button type="button" id="next" class="btn btn-outline-secondary btn-lg btn-block btn-standout">Zone suivante</button> 
         </div>
       </div>
 
       <div class="row add-vertical-space">
         <div class="col-sm">
-          <button type="button" id="back" class="btn btn-outline-secondary btn-lg btn-block btn-standout">Zone précédente</button> 
+          <button type="button" id="previous" class="btn btn-outline-secondary btn-lg btn-block btn-standout">Zone précédente</button> 
         </div>
       </div>
 
@@ -86,6 +65,12 @@
         </div>
       </div>
       
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="home" class="btn btn-outline-secondary btn-lg btn-block btn-standout">Repositionner l'outil</button> 
+        </div>
+      </div>
+
       <div class="row add-vertical-space">
         <div class="col-sm">
           <hr> 
@@ -101,49 +86,33 @@
 
 <script>
 var bed = "{{ location.bed }}";
-var zone = "{{ location.zone }}";
+var zone = {{ location.zone }};
 
 function loadPage(path) {
-    clearInterval(timerID);
-    $("body").load(path + "?bed=" + bed + "&zone=" + zone);
+    window.location = path + "?bed=" + bed + "&zone=" + zone;
 }
 
 $(function(){
   $("#hoe_all").on("click", function (e) {
     loadPage("hoe_all");
   });
-  $("#hoe_inbetween").on("click", function (e) {
-    loadPage("hoe_inbetween");
-  });
-  $("#hoe_weeds").on("click", function (e) {
-    clearInterval(timerID);
-    loadPage("hoe_weeds");
-  });
-  $("#hoe_seeds").on("click", function (e) {
-    clearInterval(timerID);
-    loadPage("hoe_seeds");
-  });
   $("#skip").on("click", function (e) {
     loadPage("skip");
   });
   $("#home").on("click", function (e) {
-    clearInterval(timerID);
     loadPage("home");
   });
-  $("#back").on("click", function (e) {
-    loadPage("back");
+  $("#previous").on("click", function (e) {
+    window.location = "moveto?bed=" + bed + "&zone=" + (zone-1);
+  });
+  $("#next").on("click", function (e) {
+    window.location = "moveto?bed=" + bed + "&zone=" + (zone+1);
   });
   $("#farm").on("click", function (e) {
     loadPage("/");
   });
 });
 
-$("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
-
-var updateCamera = function() {
-  $("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
-};
-var timerID = setInterval(updateCamera, 1000);
 </script>
   </body>
 </html>
