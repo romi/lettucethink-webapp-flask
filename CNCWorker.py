@@ -6,6 +6,9 @@ class CNCWorker(object):
     def __init__(self):
         self.mutex = Lock()
         self.haveData = False
+        self.doHoming = False
+        self.doMoveZ = False
+        self.doCancel = False
         self.nextBed = False
         self.nextZone = False
         self.nextTrajectory = False
@@ -13,6 +16,7 @@ class CNCWorker(object):
         self.status = "initializing"
         self.progress = 0
         self.dz = 0
+        self.z0 = 0
         self.z1 = -100
         self.thread = Thread(target = self.__run, args = ())
         self.thread.start()
@@ -44,6 +48,50 @@ class CNCWorker(object):
         self.mutex.acquire()
         self.dz = dz
         self.z1 += dz
+        self.mutex.release()
+
+        
+    def moveZ(self, vz):
+        self.mutex.acquire()
+        if self.status == "running" or self.status == "homing":
+            self.mutex.release()
+            return
+        self.doMoveZ = True
+        self.vz = vz
+        self.mutex.release()
+
+        
+    def setZ0(self):
+        self.mutex.acquire()
+        if self.status != "ready":
+            self.mutex.release()
+            return
+        pos = self.cnc.getPosition()
+        self.z0 = pos[2]
+        self.mutex.release()
+        print("CNCWorker: Z0 set to %d" % self.z0);
+
+        
+    def setZ1(self):
+        self.mutex.acquire()
+        if self.status != "ready":
+            self.mutex.release()
+            return
+        pos = self.cnc.getPosition()
+        self.z1 = pos[2]
+        self.mutex.release()
+        print("CNCWorker: Z1 set to %d" % self.z1);
+
+        
+    def cancel(self):
+        self.mutex.acquire()
+        self.doCancel = True
+        self.mutex.release()
+
+    
+    def homing(self):
+        self.mutex.acquire()
+        self.doHoming = True
         self.mutex.release()
 
     
@@ -80,11 +128,45 @@ class CNCWorker(object):
                 if callback != False:
                     callback(bed, zone)
                 
+            elif self.doHoming:
+                self.doHoming = False
+                self.status = "homing"
+                self.progress = 0
+                self.mutex.release()
+                self.cnc.home()
+
+                self.mutex.acquire()
+                self.status = "ready"
+                self.progress = 100.0
+                self.mutex.release()
+                
+            elif self.doMoveZ:
+                self.doMoveZ = False
+                self.cnc.moveat(0, 0, self.vz)
+                if self.vz == 0:
+                    self.status = "ready"
+                else:
+                    self.status = "movingz"
+                self.mutex.release()
+                
             else:
                 self.mutex.release()
                 time.sleep(0.5)   
 
                 
+    def __checkCancel(self):
+        self.mutex.acquire()
+        r = self.doCancel
+        if self.doCancel:
+            self.cnc.stopSpindle()
+            self.cnc.moveat(0, 0, 0)
+            self.status = "ready"
+            self.cnc.updateStatus()
+            self.doCancel = False
+        self.mutex.release()
+        return r
+
+    
     def __checkZ(self):
         self.mutex.acquire()
         dz = self.dz
@@ -106,9 +188,11 @@ class CNCWorker(object):
         while self.cnc.getStatus() == "moving":
             print("status: %s" % self.cnc.getStatus())
             time.sleep(0.1)
+            if self.__checkCancel(): return True
             self.__checkZ()
             self.cnc.updateStatus()
-
+        return False
+    
             
     def __incrProgress(self, dp):
         self.mutex.acquire()
@@ -125,19 +209,30 @@ class CNCWorker(object):
         elif trajectory == "between_seeds":
             self.__runBetweenSeeds()
 
+            
     def __moveto(self, pos, vel, prog):
         self.cnc.moveto(pos, vel)
-        self.__waitStopMoving()
+        if self.__waitStopMoving():
+            return True
         self.__incrProgress(prog)
+        return False
+    
+        
+    def __moveto2(self, pos, vel, prog):
+        self.cnc.moveto2(pos, vel)
+        if self.__waitStopMoving():
+            return True
+        self.__incrProgress(prog)
+        return False
+    
         
     def __runBoustrophedon(self):
         print("runBoustrophedon start")
-        rounds = 8
+        rounds = 7
         xoff = 0
-        vy = 100
-        vx = 40
-        dx = 45
-        z0 = 0
+        vy = 60
+        vx = 60
+        dx = 50
         vz = 10
 
         # A rough estimate of the amount of progress after each
@@ -146,26 +241,30 @@ class CNCWorker(object):
 
         print("Start spindle");
         self.cnc.startSpindle()
-        print("Tool down");
-        self.__moveto([0, 0, self.z1], [0, 0, -vz], delta_progress)
+        if self.__checkCancel(): return                
+        print("Tool down, Z1 %d" % self.z1);
+        if self.__moveto([0, 0, self.z1], [0, 0, -vz], delta_progress): return
+        
         print("Starting boustrophedon");
         for round in range(rounds):
             x0 = xoff
-            x1 = xoff - dx + vx/2
-            x2 = xoff - 2 * dx + vx/2
-            y0 = vy / 2 # not zero because the arm slows down starting at vy/2
+            x1 = xoff + dx
+            x2 = xoff + 2 * dx
+            y0 = 0
             y1 = 650
-            self.__moveto([x0, -y1, 0], [0, -vy, 0], delta_progress)
-            self.__moveto([x1, -y1, 0], [-vx, 0, 0], delta_progress)
-            self.__moveto([x1, -y0, 0], [0, vy, 0], delta_progress)
+            self.__moveto([x0, y1, 0], [0, vy, 0], delta_progress)
+            self.__moveto([x1, y1, 0], [vx, 0, 0], delta_progress)
+            self.__moveto([x1, y0, 0], [0, -vy, 0], delta_progress)
             if (round < rounds - 1):
-                self.__moveto([x2, -y0, 0], [-vx, 0, 0], delta_progress)
-            xoff -= 100
+                self.__moveto([x2, y0, 0], [vx, 0, 0], delta_progress)
+            xoff += 2 * dx
         print("Stop spindle");
         self.cnc.stopSpindle()
-        print("Tool up");
-        self.__moveto([0, 0, z0], [0, 0, vz], delta_progress)
-        self.__moveto([20, 5, 0], [20, 1, 0], delta_progress)
+        print("Tool up, Z0 %d" % self.z0);
+        if self.__moveto([0, 0, self.z0], [0, 0, vz], delta_progress): return
+        #print("Move close to zero");
+        #if self.__moveto([10, 5, 0], [-50, 1, 0], delta_progress): return
+        print("Homing");
         self.cnc.home()
         print("runBoustrophedon end")
 
@@ -175,7 +274,6 @@ class CNCWorker(object):
         vy = 50
         vx = 20
         dx = 50
-        z0 = 0
         vz = 10
         y0 = vy / 2 # not zero because the arm slows down starting at vy/2
         y1 = 650
@@ -197,7 +295,7 @@ class CNCWorker(object):
         
         # Stop spindle and tool up
         self.cnc.stopSpindle()
-        self.__moveto([0, 0, z0], [0, 0, vz], delta_progress)
+        self.__moveto([0, 0, self.z0], [0, 0, vz], delta_progress)
         
         # Start position 2
         self.__moveto([-xoff2, -y0, self.z1], [-vx, 0, 0], delta_progress)
@@ -213,10 +311,9 @@ class CNCWorker(object):
 
         # Stop spindle and tool up
         self.cnc.stopSpindle()
-        self.__moveto([0, 0, z0], [0, 0, vz], delta_progress)
+        self.__moveto([0, 0, self.z0], [0, 0, vz], delta_progress)
         
         # Going home
         self.__moveto([20, 5, 0], [20, 1, 0], delta_progress)
         self.cnc.home()
         print("runBoustrophedon end")
-                                                                                                                                                                                                                                                                                                                                

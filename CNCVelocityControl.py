@@ -46,6 +46,7 @@ class CNCVelocityControl(object):
         
     def getStatus(self):
         #self.mutex.acquire()
+        self.updateStatus()
         s = self.status
         #self.mutex.release()
         return s
@@ -53,6 +54,7 @@ class CNCVelocityControl(object):
     
     def getPosition(self):
         #self.mutex.acquire()
+        self.updateStatus()
         p = self.p
         #self.mutex.release()
         return p
@@ -64,24 +66,35 @@ class CNCVelocityControl(object):
         self.__sendCommand("z%d" % vz)
 
         
-    def setLimitPos(self, x, y, z):
+    def setTargetPos(self, x, y, z):
         self.__sendCommand("X%d" % x)
         self.__sendCommand("Y%d" % y)
         self.__sendCommand("Z%d" % z)
+
+
+    def moveto2(self, x, y, z, v):
+        self.__sendCommand("X%d" % x)
+        self.__sendCommand("Y%d" % y)
+        self.__sendCommand("Z%d" % z)
+        self.__sendCommand("M%d" % v)
+
+        
+    def wait(self):
+        self.__sendCommand("W")
 
         
     def moveto(self, x, y, z):
         # set speed according to direction
         v = list(map(lambda p, t: 50 * cmp(t, p), self.p, [x, y, z]))
-        self.setLimitPos(x, y, z)
+        self.setTargetPos(x, y, z)
         self.moveat(v[0], v[1], v[2])
 
         
     def moveto(self, p, v):
-        self.setLimitPos(p[0], p[1], p[2])
+        self.setTargetPos(p[0], p[1], p[2])
         self.moveat(v[0], v[1], v[2])
 
-        
+                
     def moveto_z(self, z, vz):
         self.__sendCommand("Z%d" % z)
         self.__sendCommand("z%d" % vz)

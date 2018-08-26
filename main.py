@@ -24,8 +24,8 @@ from flask import Flask, render_template, Response, request, redirect, jsonify
 import requests
 import datetime
 import time
-import CNCWorker
 import json
+import CNCWorker
 
 imgdir = "/tmp"
 topcamUrl = "http://lettucethink-topcam.local:10000/image.jpg"
@@ -33,8 +33,7 @@ tagsUrl = "http://lettucethink-topcam.local:10000/tags.json"
 captureUrl = "http://lettucethink-topcam.local:10000/capture"
 
 app = Flask(__name__)
-cnc = False
-#worker = CNCWorker.CNCWorker()
+worker = CNCWorker.CNCWorker()
 
 names = ["I1", "E1", "E3"]
 
@@ -85,23 +84,21 @@ beds = {
         ["E1", 6, "r-x-3", "Radis - pas de passage (3)", "skip", 0, "#ffffff"],
         ["E1", 7, "r-sel-1", "Radis - désherbage sélectif (1)", "hoe_weeds", 0, "#abc837ff"],
         ["E1", 8, "r-sel-2", "Radis - désherbage sélectif (2)", "hoe_weeds", 0, "#abc837ff"],
-        ["E1", 9, "r-sel-3", "Radis - désherbage sélectif (3)", "hoe_weeds", 0, "#abc837ff"],
-        ["E1", 10, "r-comp-1", "Radis - désherbage complet (1)", "hoe_inbetween", 0, "#89a02cff"],
-        ["E1", 11, "r-comp-2", "Radis - désherbage complet (2)", "hoe_inbetween", 0, "#89a02cff"],
-        ["E1", 12, "r-comp-3", "Radis - désherbage complet (3)", "hoe_inbetween", 0, "#89a02cff"],
-        ["E1", 13, "f-0x-1", "Fréquence - pas de passage (1)", "skip", 0, "#ffffff"],
-        ["E1", 14, "f-0x-2", "Fréquence - pas de passage (2)", "skip", 0, "#ffffff"],
-        ["E1", 15, "f-0x-3", "Fréquence - pas de passage (3)", "skip", 0, "#ffffff"],
-        ["E1", 16, "f-05x-1", "Fréquence - 1x / 2 sem. (1)", "hoe_all", 14, "#c4eaeeff"],
-        ["E1", 17, "f-05x-2", "Fréquence - 1x / 2 sem. (2)", "hoe_all", 14, "#c4eaeeff"],
-        ["E1", 18, "f-05x-3", "Fréquence - 1x / 2 sem. (3)", "hoe_all", 14, "#c4eaeeff"],
-        ["E1", 19, "f-1x-1", "Fréquence - 1x / sem. (1)", "hoe_all", 7, "#74ced8ff"],
-        ["E1", 20, "f-1x-2", "Fréquence - 1x / sem. (2)", "hoe_all", 7, "#74ced8ff"],
-        ["E1", 21, "f-1x-3", "Fréquence - 1x / sem. (3)", "hoe_all", 7, "#74ced8ff"],
-        ["E1", 22, "f-2x-1", "Fréquence - 2x / sem. (1)", "hoe_all", 3.5, "#46bccbff"],
-        ["E1", 23, "f-2x-2", "Fréquence - 2x / sem. (2)", "hoe_all", 3.5, "#46bccbff"],
-        ["E1", 24, "f-2x-3", "Fréquence - 2x / sem. (3)", "hoe_all", 3.5, "#46bccbff"],
-        ["E1", 25, "p-x-1", "Chénopodes", "skip", 0, "#ff568aff"]],
+        ["E1", 9, "r-comp-1", "Radis - désherbage complet (1)", "hoe_inbetween", 0, "#89a02cff"],
+        ["E1", 10, "r-comp-2", "Radis - désherbage complet (2)", "hoe_inbetween", 0, "#89a02cff"],
+        ["E1", 11, "r-comp-3", "Radis - désherbage complet (3)", "hoe_inbetween", 0, "#89a02cff"],
+        ["E1", 12, "f-0x-1", "Fréquence - pas de passage (1)", "skip", 0, "#ffffff"],
+        ["E1", 13, "f-0x-2", "Fréquence - pas de passage (2)", "skip", 0, "#ffffff"],
+        ["E1", 14, "f-0x-3", "Fréquence - pas de passage (3)", "skip", 0, "#ffffff"],
+        ["E1", 15, "f-05x-1", "Fréquence - 1x / 2 sem. (1)", "hoe_all", 14, "#c4eaeeff"],
+        ["E1", 16, "f-05x-2", "Fréquence - 1x / 2 sem. (2)", "hoe_all", 14, "#c4eaeeff"],
+        ["E1", 17, "f-05x-3", "Fréquence - 1x / 2 sem. (3)", "hoe_all", 14, "#c4eaeeff"],
+        ["E1", 18, "f-1x-1", "Fréquence - 1x / sem. (1)", "hoe_all", 7, "#74ced8ff"],
+        ["E1", 19, "f-1x-2", "Fréquence - 1x / sem. (2)", "hoe_all", 7, "#74ced8ff"],
+        ["E1", 20, "f-1x-3", "Fréquence - 1x / sem. (3)", "hoe_all", 7, "#74ced8ff"],
+        ["E1", 21, "f-2x-1", "Fréquence - 2x / sem. (1)", "hoe_all", 3.5, "#46bccbff"],
+        ["E1", 22, "f-2x-2", "Fréquence - 2x / sem. (2)", "hoe_all", 3.5, "#46bccbff"],
+        ["E1", 23, "f-2x-3", "Fréquence - 2x / sem. (3)", "hoe_all", 3.5, "#46bccbff"]],
     "E3": [
         ["E3", 1, "r-man-1", "Radis - manuel (1)", "skip", 0, "#cdde87ff"],
         ["E3", 2, "r-man-2", "Radis - manuel (2)", "skip", 0, "#cdde87ff"],
@@ -111,23 +108,21 @@ beds = {
         ["E3", 6, "r-x-3", "Radis - pas de passage (3)", "skip", 0, "#ffffff"],
         ["E3", 7, "r-sel-1", "Radis - désherbage sélectif (1)", "hoe_weeds", 0, "#abc837ff"],
         ["E3", 8, "r-sel-2", "Radis - désherbage sélectif (2)", "hoe_weeds", 0, "#abc837ff"],
-        ["E3", 9, "r-sel-3", "Radis - désherbage sélectif (3)", "hoe_weeds", 0, "#abc837ff"],
-        ["E3", 10, "r-comp-1", "Radis - désherbage complet (1)", "hoe_inbetween", 0, "#89a02cff"],
-        ["E3", 11, "r-comp-2", "Radis - désherbage complet (2)", "hoe_inbetween", 0, "#89a02cff"],
-        ["E3", 12, "r-comp-3", "Radis - désherbage complet (3)", "hoe_inbetween", 0, "#89a02cff"],
-        ["E3", 13, "g-ax-1", "Germination - terre argileuse - pas de passage (1)", "skip", 0, "#ffffff"],
-        ["E3", 14, "g-ax-2", "Germination - terre argileuse - pas de passage (2)", "skip", 0, "#ffffff"],
-        ["E3", 15, "g-ax-3", "Germination - terre argileuse - pas de passage (3)", "skip", 0, "#ffffff"],
-        ["E3", 16, "g-ap-1", "Germination - terre argileuse - passage (1)", "hoe_all", 0, "#c4eaeeff"],
-        ["E3", 17, "g-ap-2", "Germination - terre argileuse - passage (2)", "hoe_all", 0, "#c4eaeeff"],
-        ["E3", 18, "g-ap-3", "Germination - terre argileuse - passage (3)", "hoe_all", 0, "#c4eaeeff"],
-        ["E3", 19, "g-sx-1", "Germination - terre sableuse - pas de passage (1)", "skip", 0, "#74ced8ff"],
-        ["E3", 20, "g-sx-2", "Germination - terre sableuse - pas de passage (2)", "skip", 0, "#74ced8ff"],
-        ["E3", 21, "g-sx-3", "Germination - terre sableuse - pas de passage (3)", "skip", 0, "#74ced8ff"],
-        ["E3", 22, "g-sp-1", "Germination - terre sableuse - passage (1)", "hoe_all", 0, "#46bccbff"],
-        ["E3", 23, "g-sp-2", "Germination - terre sableuse - passage (2)", "hoe_all", 0, "#46bccbff"],
-        ["E3", 24, "g-sp-3", "Germination - terre sableuse - passage (3)", "hoe_all", 0, "#46bccbff"],
-        ["E3", 25, "a-x-1", "Arabidopsis", "skip", 0, "#c40063ff"]]
+        ["E3", 9, "r-comp-1", "Radis - désherbage complet (1)", "hoe_inbetween", 0, "#89a02cff"],
+        ["E3", 10, "r-comp-2", "Radis - désherbage complet (2)", "hoe_inbetween", 0, "#89a02cff"],
+        ["E3", 11, "r-comp-3", "Radis - désherbage complet (3)", "hoe_inbetween", 0, "#89a02cff"],
+        ["E3", 12, "g-ax-1", "Germination - terre argileuse - pas de passage (1)", "skip", 0, "#ffffff"],
+        ["E3", 13, "g-ax-2", "Germination - terre argileuse - pas de passage (2)", "skip", 0, "#ffffff"],
+        ["E3", 14, "g-ax-3", "Germination - terre argileuse - pas de passage (3)", "skip", 0, "#ffffff"],
+        ["E3", 15, "g-ap-1", "Germination - terre argileuse - passage (1)", "hoe_all", 0, "#c4eaeeff"],
+        ["E3", 16, "g-ap-2", "Germination - terre argileuse - passage (2)", "hoe_all", 0, "#c4eaeeff"],
+        ["E3", 17, "g-ap-3", "Germination - terre argileuse - passage (3)", "hoe_all", 0, "#c4eaeeff"],
+        ["E3", 18, "g-sx-1", "Germination - terre sableuse - pas de passage (1)", "skip", 0, "#74ced8ff"],
+        ["E3", 19, "g-sx-2", "Germination - terre sableuse - pas de passage (2)", "skip", 0, "#74ced8ff"],
+        ["E3", 20, "g-sx-3", "Germination - terre sableuse - pas de passage (3)", "skip", 0, "#74ced8ff"],
+        ["E3", 21, "g-sp-1", "Germination - terre sableuse - passage (1)", "hoe_all", 0, "#46bccbff"],
+        ["E3", 22, "g-sp-2", "Germination - terre sableuse - passage (2)", "hoe_all", 0, "#46bccbff"],
+        ["E3", 23, "g-sp-3", "Germination - terre sableuse - passage (3)", "hoe_all", 0, "#46bccbff"]]
     }
 
 ############################################################
@@ -215,6 +210,12 @@ def weedingPage(bed, zone):
     return render_template('weeding.html', location=location, action=action)
 
 
+def homingPage(bed, zone):
+    action = getAction(bed, zone)
+    location = {"bed": bed, "zone": zone}
+    return render_template('homing.html', location=location, action=action)
+
+
 def movetoPage(bed, zone):
     zones = getBed(bed)
     if zone <= 0:
@@ -290,11 +291,11 @@ def hoeAll():
     global worker
     bed = request.args["bed"]
     zone = int(request.args["zone"])
-#    storeImage(bed, zone, "before")
+    storeImage(bed, zone, "before")
     addHistory(bed, zone, "hoe_all")
-#    worker.nextRun(bed, zone, "boustrophedon", storeAfterImage)
-#    return weedingPage(bed, zone)
-    return movetoPage(bed, zone+1)
+    worker.nextRun(bed, zone, "boustrophedon", storeAfterImage)
+    return weedingPage(bed, zone)
+#    return movetoPage(bed, zone+1)
 
 
 @app.route('/skip')
@@ -302,14 +303,24 @@ def skip():
     bed = request.args["bed"]
     zone = int(request.args["zone"])
     addHistory(bed, zone, "skip")
-#    storeImage(bed, zone, "before")
+    storeImage(bed, zone, "before")
     return movetoPage(bed, zone+1)
 
    
 @app.route('/homing')
 def homing():
-    print("homing")
-    return "ok"
+    bed = request.args["bed"]
+    zone = int(request.args["zone"])
+    worker.homing()
+    return homingPage(bed, zone)
+
+
+@app.route('/cancel')
+def cancel():
+    bed = request.args["bed"]
+    zone = int(request.args["zone"])
+    worker.cancel()
+    return movetoPage(bed, zone)
 
 
 @app.route('/toolup')
@@ -326,9 +337,44 @@ def tooldown():
 
 @app.route('/topcam.jpg')
 def topcam():
-#    img = requests.get(topcamUrl + "?w=320&h=240")
-#    return Response(img, mimetype="image/jpeg")
-    return "ok"
+    img = requests.get(topcamUrl + "?w=320&h=240")
+    return Response(img, mimetype="image/jpeg")
+#    return "ok"
+
+
+@app.route('/config.html')
+def configPage():
+    return render_template('config.html')
+
+
+@app.route('/movedown')
+def movedown():
+    worker.moveZ(-10)
+    return jsonify(status="ok")
+
+
+@app.route('/moveup')
+def moveup():
+    worker.moveZ(10)
+    return jsonify(status="ok")
+
+
+@app.route('/stopmoving')
+def stopmoving():
+    worker.moveZ(0)
+    return jsonify(status="ok")
+
+
+@app.route('/setz0')
+def setz0():
+    worker.setZ0()
+    return jsonify(status="ok")
+
+
+@app.route('/setz1')
+def setz1():
+    worker.setZ1()
+    return jsonify(status="ok")
 
 
 @app.route('/tags.json')
