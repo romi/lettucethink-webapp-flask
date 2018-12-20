@@ -1,10 +1,10 @@
 """
     main.py
 
-    Copyright (C) 2017 David Colliaux & Peter Hanappe, Sony Computer
-    Science Laboratories
+    Copyright (C) 2017 Sony Computer Science Laboratories
+    Authors: David Colliaux & Peter Hanappe
 
-    main.py is part of LettuceThink.
+    main.py is part of LettuceThink Web Interface.
 
     LettuceThink is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

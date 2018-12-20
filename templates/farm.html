@@ -8,7 +8,7 @@
     <title>LettuceThink</title>
 
 <style>
-.add-vertical-space { margin-top: 20px; }
+.add-vertical-space { margin-top: 10px; margin-bottom: 10px; }
 .btn-bed { padding: 12px; font-size: 24px; line-height: 36px; white-space: normal; margin-bottom: 10px; }
 table.farm { vertical-align: top; margin: 20px; }
 td.farm { vertical-align: top; text-align: center; padding: 10px; }
@@ -22,39 +22,57 @@ div.exp { diplay: inline; }
   <body>
 
     <div class="container">
-    <div class="row add-vertical-space">
-      <div class="col-sm">
-         <table class="farm">
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <table class="farm">
             <tr>
-{% for name in names %}
+              {% for name in names %}
               <td class="farm">
                 Planche <button type="button" class="btn btn-dark btn-lg btn-block btn-bed" id="{{ name }}" onclick="showZone('{{name}}', 1)">{{ name }}</button>
                 {% set zones = beds[name] %}
                 <table class="bed">
-{% for zone in zones %}
+                  {% for zone in zones %}
                   <tr>
                     <td class="zone text-center" onclick="showZone('{{name}}', '{{ zone[1] }}')" style="background-color: {{ zone[6] }};"><div class="number">{{ zone[1] }}</div><br><div class="exp">{{ zone[2] }}</div></td>
                   </tr>
-{% endfor %}        
+                  {% endfor %}        
                 </table>
               <td>
-{% endfor %}        
+                {% endfor %}        
             </tr>
           </table>
         </div>
       </div>
 
-    
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="config" class="btn btn-primary btn-lg btn-block btn-standout">Configuration</button>
+        </div> 
+      </div>
+      
+    </div>
+
+      
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Bootstrap JS -->
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
 
 <script>
+
+function loadPage(path) {
+    window.location = path;
+}
+
 function showZone(bed, zone)
 {
-    window.location = "moveto?bed=" + bed + "&zone=" + zone;
+    loadPage("moveto?bed=" + bed + "&zone=" + zone);
 }
+
+$("#config").on("click", function (e) {
+    loadPage("/config.html");
+});
+
 </script>
     
   </body>

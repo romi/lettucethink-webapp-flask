@@ -53,6 +53,12 @@
         </div> 
       </div>
 
+      <div class="row">
+        <div class="col-sm">
+          <button type="button" id="cancel" class="btn btn-primary btn-lg btn-block btn-standout">Interrompre</button>
+        </div> 
+      </div>
+
     </div>
     
     <!-- Optional JavaScript -->
@@ -64,6 +70,10 @@
 var bed = "{{ location.bed }}";
 var zone = {{ location.zone }};
 
+function loadPage(path) {
+    window.location = path;
+}
+
 $("#topcam").attr("src", "/topcam.jpg?dummy=" + Date.now());
 
 $("#tooldown").on("click", function (e) {
@@ -74,10 +84,14 @@ $("#toolup").on("click", function (e) {
     $.getJSON("/toolup", function(d) {});
 });
 
+$("#cancel").on("click", function (e) {
+    loadPage("/cancel?bed=" + bed + "&zone=" + zone);
+});
+
 var updateProgress = function(d) {
     if (d.status && d.status == "ready") {
         clearInterval(timerID);
-        $("body").load("moveto?bed=" + bed + "&zone=" + (parseInt(zone)+1));
+        loadPage("moveto?bed=" + bed + "&zone=" + (parseInt(zone)+1));
     } else {
         var value = Math.floor(d.progress);
         $("#status").html(d.status);
