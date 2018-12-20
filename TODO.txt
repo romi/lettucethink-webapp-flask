@@ -1,2 +1,0 @@
-
-- Check status of CNC before requesting a run. Return message if not idle.
