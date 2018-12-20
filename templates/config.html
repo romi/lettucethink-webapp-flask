@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
+    <title>LettuceThink - Config</title>
+
+<style>
+.add-vertical-space { margin-top: 10px; margin-bottom: 10px; }
+.btn-standout { padding: 12px; font-size: 28px; line-height: 30px; white-space: normal; }
+.zone-info { padding: 0px; font-size: 24px; line-height: 24px; border: 0px; margin: 4px; }
+.zone-details { padding: 0px; font-size: 14px; line-height: 16px; border: 0px; margin: 0px; }
+</style>
+    
+  </head>
+  <body>
+
+    <div class="container">
+      
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="moveup" class="btn btn-primary btn-lg btn-block btn-standout">Remonter l'outil</button>
+        </div> 
+      </div>
+
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="stopmoving" class="btn btn-primary btn-lg btn-block btn-standout">Arrêter</button>
+        </div> 
+      </div>
+
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="movedown" class="btn btn-primary btn-lg btn-block btn-standout">Descendre l'outil</button>
+        </div> 
+      </div>
+
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="setz0" class="btn btn-primary btn-lg btn-block btn-standout">Définir comme limite haute</button>
+        </div> 
+      </div>
+
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="setz1" class="btn btn-primary btn-lg btn-block btn-standout">Définir comme limite basse</button>
+        </div> 
+      </div>
+
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="home" class="btn btn-outline-secondary btn-lg btn-block btn-standout">Repositionner l'outil</button> 
+        </div>
+      </div>
+
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="farm" class="btn btn-primary btn-lg btn-block btn-standout">Retour aux planches</button>
+        </div> 
+      </div>
+
+    </div>
+    
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Bootstrap JS -->
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+
+<script>
+
+function loadPage(path) {
+    window.location = path;
+}
+
+$("#movedown").on("click", function (e) {
+    $.getJSON("/movedown", function(d) {});
+});
+
+$("#moveup").on("click", function (e) {
+    $.getJSON("/moveup", function(d) {});
+});
+
+$("#stopmoving").on("click", function (e) {
+    $.getJSON("/stopmoving", function(d) {});
+});
+
+$("#setz0").on("click", function (e) {
+    $.getJSON("/setz0", function(d) {});
+});
+
+$("#setz1").on("click", function (e) {
+    $.getJSON("/setz1", function(d) {});
+});
+
+$("#farm").on("click", function (e) {
+    loadPage("/");
+});
+
+$("#home").on("click", function (e) {
+    loadPage("/homing");
+});
+</script>
+  </body>
+</html>
