@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
+    <title>LettuceThink</title>
+
+<style>
+.add-vertical-space { margin-top: 16px; }
+.btn-standout { padding: 12px; font-size: 28px; line-height: 30px; white-space: normal; }
+.zone-info { padding: 0px; font-size: 24px; line-height: 24px; border: 0px; margin: 4px; }
+.zone-details { padding: 0px; font-size: 14px; line-height: 16px; border: 0px; margin: 0px; }
+</style>
+    
+  </head>
+  <body>
+
+    <div class="container">
+
+      <div class="row add-vertical-space">
+        <div class="col-sm">
+          <button type="button" id="hoe_all" class="btn btn-primary btn-lg btn-block btn-standout">RUN</button>
+        </div>
+      </div>
+              
+    </div>
+    
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Bootstrap JS -->
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+
+<script>
+
+function loadPage(path) {
+    window.location = path;
+}
+
+$(function(){
+  $("#hoe_all").on("click", function (e) {
+    loadPage("hoe_all");
+  });
+});
+
+</script>
+  </body>
+</html>
