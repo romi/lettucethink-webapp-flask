@@ -20,9 +20,7 @@
     <div class="container">
       <div class="row">
         <div class="col-sm">
-          <div class="zone-info text-center">Planche {{location.bed}} - Zone {{location.zone}}</div>
-          <div class="zone-details text-center">{{ action[3] }}</div>
-          <div class="zone-details text-center">{{ action[2] }}</div>
+          <div class="zone-info text-center">Row {{location.bed}} - Zone {{location.zone}}</div>
         </div>
       </div>
 
@@ -43,19 +41,19 @@
       
       <div class="row">
         <div class="col-sm" style="margin-bottom: 20px">
-          <button type="button" id="toolup" class="btn btn-primary btn-lg btn-block btn-standout">Remonter l'outil</button>
+          <button type="button" id="toolup" class="btn btn-primary btn-lg btn-block btn-standout">Tool Up</button>
+        </div> 
+      </div>
+
+      <div class="row">
+        <div class="col-sm" style="margin-bottom: 20px">
+          <button type="button" id="tooldown" class="btn btn-primary btn-lg btn-block btn-standout">Tool Down</button>
         </div> 
       </div>
 
       <div class="row">
         <div class="col-sm">
-          <button type="button" id="tooldown" class="btn btn-primary btn-lg btn-block btn-standout">Descendre l'outil</button>
-        </div> 
-      </div>
-
-      <div class="row">
-        <div class="col-sm">
-          <button type="button" id="cancel" class="btn btn-primary btn-lg btn-block btn-standout">Interrompre</button>
+          <button type="button" id="cancel" class="btn btn-primary btn-lg btn-block btn-standout">Stop</button>
         </div> 
       </div>
 
@@ -91,7 +89,8 @@ $("#cancel").on("click", function (e) {
 var updateProgress = function(d) {
     if (d.status && d.status == "ready") {
         clearInterval(timerID);
-        loadPage("moveto?bed=" + bed + "&zone=" + (parseInt(zone)+1));
+        //loadPage("moveto?bed=" + bed + "&zone=" + (parseInt(zone)+1));
+        loadPage("/");
     } else {
         var value = Math.floor(d.progress);
         $("#status").html(d.status);

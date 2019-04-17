@@ -20,20 +20,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-from flask import Flask, render_template, Response, request, redirect, jsonify
+from flask import Flask, render_template, Response, request, redirect, jsonify, make_response, send_file
+from lettucethink import dummy
 import requests
 import datetime
 import time
 import json
+import io
+import imageio
 import CNCWorker
 
 imgdir = "/tmp"
-topcamUrl = "http://lettucethink-topcam.local:10000/image.jpg"
-tagsUrl = "http://lettucethink-topcam.local:10000/tags.json"
-captureUrl = "http://lettucethink-topcam.local:10000/capture"
 
 app = Flask(__name__)
 worker = CNCWorker.CNCWorker()
+
+camera = dummy.Camera("topcam.jpg")
 
 names = ["I1", "E1", "E3"]
 
@@ -237,9 +239,7 @@ def storeImage(bed, zone, label):
     expid = action[2]
     name = "%s_%s_%s_DATE_%s" % (getFarmId(), zoneid, expid, label)
     print("Capturing topcam, name %s" % (name));
-    r = requests.get("%s?name=%s" % (captureUrl, name))
-    # FIXME handle response 
-    print(r.text)
+    camera.store_views(".", "jpg")
 
     
 def storeAfterImage(bed, zone):
@@ -337,10 +337,18 @@ def tooldown():
 
 @app.route('/topcam.jpg')
 def topcam():
-    img = requests.get(topcamUrl + "?w=320&h=240")
-    return Response(img, mimetype="image/jpeg")
-#    return "ok"
-
+#    img = camera.grab()
+#    return Response(img, mimetype="image/jpeg")
+#    
+#    image = camera.grab()
+#    byte_array = io.BytesIO()
+#    image.save(byte_array, format='JPG')
+#    byte_array = byte_array.getvalue()
+#    response = make_response(byte_array)
+#    response.headers.set('Content-Type', 'image/jpeg')
+#    return response
+#
+    return send_file("topcam.jpg", mimetype='image/jpg')
 
 @app.route('/config.html')
 def configPage():

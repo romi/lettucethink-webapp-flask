@@ -16,11 +16,11 @@ class CNCVelocityControl(object):
         #self.mutex.acquire()
         self.serial_port = serial.Serial(self.port, 115200)
         # read '#ready'
-        while self.serial_port.in_waiting == 0:
-            time.sleep(0.1)   
-        r = self.serial_port.readline() 
+        #while self.serial_port.in_waiting == 0:
+        #    time.sleep(0.1)   
+        #r = self.serial_port.readline() 
         #self.mutex.release()
-        self.home()
+        if homing: self.home()
         self.setZero()
         self.status = "idle"
         self.p = [0, 0, 0]
