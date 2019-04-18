@@ -1,5 +1,5 @@
 #import CNCVelocityControl
-from lettucethink import dummy, path
+from lettucethink import dummy, path, grbl
 import time
 from threading import Thread, Lock
 
@@ -18,7 +18,7 @@ class CNCWorker(object):
         self.progress = 0
         self.dz = 0
         self.z0 = 0
-        self.z1 = -100
+        self.z1 = -250
         self.thread = Thread(target = self.__run, args = ())
         self.thread.start()
         #self.cnc = CNCVelocityControl.CNCVelocityControl("/dev/ttyACM0")
@@ -101,8 +101,11 @@ class CNCWorker(object):
         #print("CNCWorker: Starting CNC");
         #self.cnc = CNCVelocityControl.CNCVelocityControl("/dev/ttyACM0")
 
-        print("Creating dummy CNC");
-        self.cnc = dummy.CNC("/dev/ttyACM0")
+        #print("Creating dummy CNC");
+        #self.cnc = dummy.CNC("/dev/ttyACM0")
+
+        print("Creating Grbl CNC");
+        self.cnc = grbl.CNC("/dev/ttyACM0", homing=True)
         
         self.mutex.acquire()
         self.status = "ready"
@@ -264,9 +267,9 @@ class CNCWorker(object):
     def __runBoustrophedon(self):
         print("runBoustrophedon start")
 
-        dx = 50
-        dy = 500
-        xmax = 500
+        dx = 49
+        dy = 650
+        xmax = 641
         p = path.make_boustrophedon(0, 0, dx, dy, xmax)
         
         print("Going to (0,0)");
