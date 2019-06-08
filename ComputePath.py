@@ -15,10 +15,10 @@ if True:
    print("Grabbing image")
    image = camera.grab()
    print(image.shape)
-   print("Writing image to test.jpg")
+   print("Writing image to topcam.jpg")
    imageio.imwrite('topcam.jpg', image)
 else:
-   image = imageio.imread('00118.jpg')
+   image = imageio.imread('test.jpg')
    imageio.imwrite('topcam.jpg', image)
    print(image.shape)
    
